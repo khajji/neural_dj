@@ -21,15 +21,14 @@ do
 		echo "item: $item"
 		if [[ $item == *".metadata"* ]]; then
 			continue
-		fi
-		if [[ $item == "song"*"1.mp3"* ]]; then
+		elif [[ $item == "song"*"1.mp3"* ]]; then
 			c1="$d$i/$item $dfn/s1.mp3"
-		fi
-		if [[ $item == "song"*"2.mp3"* ]]; then
+		elif [[ $item == "song"*"2.mp3"* ]]; then
 			c1="$d$i/$item $dfn/s2.mp3"
-		fi
-		if [[ $item == *"transition"* ]]; then
+		elif [[ $item == "transition$i.mp3" ]]; then
 			c1="$d$i/$item $dfn/music.mp3"
+		else
+			c1="$d$i/$item $dfn/something.mp3"
 		fi
 		
 		#podcast download
@@ -44,10 +43,12 @@ do
 	done
 
 	#python
-	c1="$g"
+	c1="$g $i"
 	eval $c1
 	
 	#upload dataset
 	c1="$u$i/transition_part$i.mp3"
 	eval $c1
+
+	rm podcasts/*
 done
