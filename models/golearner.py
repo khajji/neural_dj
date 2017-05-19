@@ -18,16 +18,17 @@ dy = 784
 #y_shape=[batch, height, width, channels]
 #network_specs = #[(['conv', ('height', 'width', 'depth'), 'activation'], number), (['connected', (outsize), 'activation'], number)]
 network_specs = [
-				 (['conv',(5, 5, 32), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
-				 (['conv', (5,5,64), tf.nn.relu], 1), #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
-				 (['connected', (dy), tf.nn.relu], 1), #layer 3: fully connected layer with output size dy and relu activation function
-				 (['dropout',   None, None],     1)]
+				 (['conv',(1, 1, 16), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
+				 (['conv',(1, 1, 64), tf.nn.relu], 1),
+				 (['conv', (1,1,1), None], 1)] #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
+				 #(['connected', (dy), None], 1), #layer 3: fully connected layer with output size dy and relu activation function
+				 #(['dropout',   None, None],     1)
 ##data_specs = (x_shape, y_shape, xnetwork_shape, ynetwork_shape)
 data_specs = ([None, dx], [None, dy], [None,28,28,1], [None,28,28,1])
 cnn = Cnn(data_specs, network_specs)
 
 #cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
-cnn.train(xTr, yTr, batchsize=50, n_training=200)
+cnn.train(xTr, yTr, batchsize=100, n_training=1000, xVl=xVl, yVl=yVl)
 
 y_pred, loss = cnn.test(xVl, yVl)
 
