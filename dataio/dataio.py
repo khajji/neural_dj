@@ -1,45 +1,62 @@
-#Main functionlalities:
-#1- read write an mp3
-#2- split data test and training set
-#3- split validation and training
-from pydub import AudioSegment
 import os
-for os import path
 import numpy as np
+import pdb
+from scipy import io
+import matplotlib.pyplot as plt
 
+def loadx(files):
+	return load(files, 'x')
 
-def load(files):
-	data = []
-	for f is files:
-		x=io.loadmat(f)
-		data+=[x]
+def loady(files):
+	return load(files, 'y')
+
+def load(files, key):
+	data = None
+	for f in files:
+		x=io.loadmat(f)[key]
+		data = x if data is None else np.concatenate((data,x)) 
 	return np.matrix(data)
 
 def save(x, to, names):
-	to=path.abspath(to)
+	to=os.path.abspath(to)
 	folder_prefix="prediction_"
 	splitchar="_"
 	#find the next folder name to write the predictions in and create it
-	prediction_number = max([int(os.path.basename(d).split(splitchar)[1]) for d in os.listdir(to) if folder_prefix in d])+1
-	out_path = path.join(to, folder_prefix+str(prediction_number))
+	prediction_number = max([int(os.path.basename(d).split("_")[1]) for d in os.listdir(to) if "prediction"in d]+[0])+1
+	out_path = os.path.join(to, folder_prefix+str(prediction_number))
 	if not os.path.exists(out_path):
 		os.makedirs(out_path)
 	else:
 		raise Exception(out_path +' already exists!')
 
 	#write the predictions in the create folder
-	(n,d)=x.shape()
+	(n,d)=np.shape(x)
 	for i in range(n):
-		io.savemat(path.join(out_path, names[i]), {x[i,:]})
+		io.savemat(os.path.join(out_path, names[i]), {'y':x[i,:]})
 	return True
 
 
-def sample_batch(xp, yp, batchsize, i):
-	n = np.shape(x) #n is the number of training points. d is the dimention. 
+def sample_batch(xp, yp, batchsize, slice_number):
+	#pdb.set_trace()
+	n = np.size(xp) #n is the number of training points. d is the dimention. 
 	start = (batchsize*slice_number)%n
-	end = min(start+size, n)
-	x_batch,y_batch = load_group(x[start:end]), load_group(y[start:end])
+	end = min(start+batchsize, n)
+	x_batch,y_batch = loadx(xp[start:end]), loady(yp[start:end])
 	return x_batch, y_batch
+
+def plot_images(X):
+	xdim=28; ydim=28 
+	n, d = X.shape
+	f, axarr = plt.subplots(1, n, sharey=True)
+	f.set_figwidth(10 * n)
+	f.set_figheight(n)
+	
+	if n > 1:
+		for i in range(n):
+			axarr[i].imshow(X[i, :].reshape(ydim, xdim), cmap=plt.cm.binary_r)
+	else:
+		axarr.imshow(X[0, :].reshape(ydim, xdim), cmap=plt.cm.binary_r)
+	plt.show()
 	 
 
 
@@ -48,24 +65,31 @@ class Dataset: #For this class a data point is string representing a file path. 
 	ys="y"
 	yhat="yhat"
 
-	def __init__(path=None):
-		self.dataset=path.abspath(path)
-		self.x = [path.join(d,Dataset.xs) for d in data]
-		self.y = [path.join(d,Dataset.ys) for d in data]
+	def __init__(self, path=None):
+		self.dataset=os.path.abspath(path)
+		data=[]
+		for d in os.listdir(self.dataset):
+			d = os.path.join(self.dataset, d)
+			if os.path.isdir(d) and ".DS" not in d:
+				data += [d]
+		#pdb.set_trace()
+		
+		self.x = np.array([os.path.join(d,Dataset.xs) for d in data])
+		self.y = np.array([os.path.join(d,Dataset.ys) for d in data])
 		self.xTr, self.yTr, self.xVl, self.yVl  = None, None, None, None
 		
 
-	def split(ratio=0.8):  #splits and returns a list of file paths
-		data=np.array[os.listdir(self.dataset)]
-		n = np.size(data)
+	def split(self, ratio=0.8):  #splits and returns a list of file paths
+		n = np.size(self.x)
 		shuffle = np.random.permutation(n) #randomly shuffle the data
-		x=self.x[suffle]; y=self.y[suffle];
+		
+		x=self.x[shuffle]; y=self.y[shuffle];
 
-		self.xTr, self.yTr, self.xVl, self.yVl = x[:int(ratio*n)], y[:int(ratio*n)], x[int(ratio*n)+1,:], y[int(ratio*n)+1,:]
+		self.xTr, self.yTr, self.xVl, self.yVl = x[:int(ratio*n)], y[:int(ratio*n)], x[int(ratio*n)+1:], y[int(ratio*n)+1:]
 		
 		return self.xTr, self.yTr, self.xVl, self.yVl
 
-	def give_outputs():
+	def give_outputs(self):
 		return [Dataset.yhat+os.path.basename(os.path.dirname(x)) for x in self.xVl]
 		
 
