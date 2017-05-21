@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from cnn import *
 
-data_path="../data_sample/pprocessed_data2"
+data_path="../data_sample/pprocessed_data"
 prediction_path = "../data_sample/predictions"
 #pdb.set_trace()
 dataset = Dataset(data_path)
 xTr, yTr, xVl, yVl = dataset.split(ratio=0.8)
-dx = 784 #
-dy = 784 #435, 1294
+dx =2999760
+dy = 435* 1294
 #x_shape = [batch, height, width, channels] 
 #y_shape=[batch, height, width, channels]
 #network_specs = #[(['conv', ('height', 'width', 'depth'), 'activation'], number), (['connected', (outsize), 'activation'], number)]
@@ -25,9 +25,9 @@ network_specs = [
 				  #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
 				
 
-data_specs = ([None, 870, 1294,1], [None, 435, 1294,1], [None,870, 1294,1], [None,435, 1294,1])
+data_specs = ([None, dx], [None, dy], [None,870, 1294,1], [None,435, 1294,1])
 cnn = Cnn(data_specs, network_specs)
-
+pdb.set_trace()
 #cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
 cnn.train(xTr, yTr, batchsize=100, n_training=2000, xVl=xVl, yVl=yVl)
 

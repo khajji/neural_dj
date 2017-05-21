@@ -42,7 +42,7 @@ class Cnn:
 					z =  Cnn.connected_layer(z, outsize , activation)
 				elif layer == 'dropout':
 					z = Cnn.dropout_layer(z, self.dropout)
-				elif layer == 'pooling'
+				elif layer == 'pooling':
 					(height, width)=params
 					z = Cnn.pooling_layer(z, height, width)
 

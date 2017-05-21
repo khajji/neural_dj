@@ -13,7 +13,7 @@ def loady(files):
 def load(files, key):
 	data = None
 	for f in files:
-		x=io.loadmat(f)[key]
+		x=io.loadmat(f)[key].reshape(1,-1)
 		data = x if data is None else np.concatenate((data,x)) 
 	return np.matrix(data)
 
