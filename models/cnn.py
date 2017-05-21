@@ -42,12 +42,14 @@ class Cnn:
 					z =  Cnn.connected_layer(z, outsize , activation)
 				elif layer == 'dropout':
 					z = Cnn.dropout_layer(z, self.dropout)
+				elif layer == 'pooling'
+					(height, width)=params
+					z = Cnn.pooling_layer(z, height, width)
 
-		#self.y_hat = tf.reshape(z, Cnn.reshape(self.y.get_shape().as_list()))
-		self.y_hat = tf.reshape(z, [-1,784])
+		self.y_hat = tf.reshape(z, Cnn.reshape(self.y.get_shape().as_list()))
+		#self.y_hat = tf.reshape(z, [-1,784])
 		#y_res = tf.reshape(y_conv, )
 		#pdb.set_trace()
-		d = self.y_hat.get_shape().as_list()[1]
 		self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.subtract(self.y_hat, self.y)),reduction_indices=1))) #the mean euclidian distance between predictions and labels
 		#self.loss = tf.reduce_mean(tf.square(tf.subtract(self.y_hat, self.y)))
 		#self.ycnn_hat=tf.reshape(z, Cnn.reshape(self.ycnn_shape))
@@ -87,7 +89,6 @@ class Cnn:
 		xVl, yVl = loadx(xVl), loady(yVl)
 		#sess = tf.InteractiveSession()
 
-		#sess.run(tf.global_variables_initializer())
 		y_pred=self.y_hat.eval(feed_dict={self.x: xVl, self.dropout:0})
 		score = self.loss.eval(feed_dict={self.x: xVl, self.y: yVl, self.dropout:0})
 		#sess.close()
@@ -131,6 +132,12 @@ class Cnn:
 			z = activation(tf.matmul(x, w) + b)
 		else:
 			z=tf.matmul(x, w) + b
+		return z
+
+	@staticmethod
+	def pooling_layer(x, pool_height, pool_width):
+		z = tf.nn.max_pool(x, ksize=[1, pool_height, pool_width, 1],
+                        strides=[1, 2, 2, 1], padding='SAME')
 		return z
 
 	@staticmethod
