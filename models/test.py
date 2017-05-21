@@ -48,7 +48,7 @@ def apply_cnn(Xtr, Ytr, Xte, Ground_Truth=None, drop_pr=0.5, n_training=1000):
 
 	#cross_entropy = tf.reduce_mean(
     #	tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv)) #we use the cross entropy loss
-	pdb.set_trace()
+	#pdb.set_trace()
 	#cross_entropy = tf.reduce_mean(tf.square(tf.subtract(y_conv, y_image)))
 	cross_entropy = tf.reduce_mean(tf.divide(tf.sqrt(tf.reduce_sum(tf.square(tf.subtract(y_res, y_)),reduction_indices=1)),784)) #the mean euclidian distance between predictions and labels
 	train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy) #we use adam method to minimize the loss
