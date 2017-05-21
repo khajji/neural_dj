@@ -8,7 +8,7 @@ def loadx(files):
 	return load(files, 'x')
 
 def loady(files):
-	return load(files, 'y')
+	return load(files, 'x')
 
 def load(files, key):
 	data = None
