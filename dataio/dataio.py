@@ -14,9 +14,22 @@ def load(files, key):
 	data = None
 	#pdb.set_trace()
 	for f in files:
-		x=io.loadmat(f)[key].reshape(1,-1)
+		x=io.loadmat(f)[key]
+		x=get_channels_representation(x, 3)
+		x=x.reshape(1,-1)
 		data = x if data is None else np.concatenate((data,x)) 
 	return np.matrix(data)
+
+def get_channels_representation(x, num_channels):
+	(n,d) = np.shape(x)
+	if(n%num_channels != 0):
+		raise Exception("unmatch in dimensions")
+
+	channel_width = int(n/num_channels)
+	newx=np.zeros([channel_width,d,num_channels])
+	for i in range(num_channels):
+		newx[:,:,i]=x[i*channel_width:(i+1)*channel_width,:]
+	return newx
 
 def save(x, to, names):
 	to=os.path.abspath(to)

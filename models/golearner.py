@@ -26,13 +26,13 @@ network_specs = [
 				 (['pooling',(1,2), None], 1),
 				 (['conv',(10, 5, 16), tf.nn.relu], 1),
 				 (['conv',(10, 5, 16), tf.nn.relu], 1),
-				 (['conv',(10,5, 1), None], 1)
+				 (['conv',(10,5, 3), None], 1)
 				 ]
 
 				  #VG net convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
 				
 
-data_specs = ([None, dx], [None, dy], [None,39, 2586*2,1], [None,39, 1293,1])
+data_specs = ([None, dx], [None, dy], [None,13, 2586*2,3], [None,13, 1293,3])
 cnn = Cnn(data_specs, network_specs)
 
 #cnn.build_network(xTr, yTr, batchsize=50, n_training=1)

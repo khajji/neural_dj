@@ -68,6 +68,7 @@ class Cnn:
 		#pdb.set_trace()
 		for i in range(n_training):
 			x_batch, y_batch, _, _ = sample_batch(xTr, yTr, batchsize, i)
+			#pdb.set_trace()
 
 			if i%1==0:
 				#validation_loss=None
