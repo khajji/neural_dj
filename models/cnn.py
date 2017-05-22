@@ -31,7 +31,7 @@ class Cnn:
 		#self.ycnn = tf.reshape(self.y, Cnn.reshape(self.ycnn_shape)) #[-1,1,self.y_shape,1]
 		z=self.xcnn; self.dropout = tf.placeholder(tf.float32) #dropout probability holder
 		
-		
+	#	pdb.set_trace()
 		for spec in self.specs:
 			([layer, params, activation], depth) = spec
 			for i in range(depth):
@@ -44,6 +44,7 @@ class Cnn:
 				elif layer == 'dropout':
 					z = Cnn.dropout_layer(z, self.dropout)
 				elif layer == 'pooling':
+				#	pdb.set_trace()
 					(height, width)=params
 					z = Cnn.pooling_layer(z, height, width)
 
@@ -69,7 +70,7 @@ class Cnn:
 		for i in range(n_training):
 			x_batch, y_batch, _, _ = sample_batch(xTr, yTr, batchsize, i)
 
-			if i%50==0:
+			if i%1==0:
 				#validation_loss=None
 				loss = self.loss.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
 				if xVl is not None: #validation loss if validation data provided
@@ -196,7 +197,7 @@ class Cnn:
 	@staticmethod
 	def pooling_layer(x, pool_height, pool_width):
 		z = tf.nn.max_pool(x, ksize=[1, pool_height, pool_width, 1],
-                        strides=[1, 2, 2, 1], padding='SAME')
+                        strides=[1, pool_height, pool_width, 1], padding='SAME')
 		return z
 
 	@staticmethod

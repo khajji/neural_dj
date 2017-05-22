@@ -12,26 +12,29 @@ prediction_path = "../data_sample/predictions"
 #pdb.set_trace()
 dataset = Dataset(data_path)
 xTr, yTr, xVl, yVl = dataset.split(ratio=0.8)
-dx =870*2588
-dy = 435* 1294
+dx =39*2586*2
+dy = 39*1293
 #x_shape = [batch, height, width, channels] 
 #y_shape=[batch, height, width, channels]
 #network_specs = #[(['conv', ('height', 'width', 'depth'), 'activation'], number), (['connected', (outsize), 'activation'], number)]
 network_specs = [
-				 (['conv',(1, 1, 3), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
-				 (['conv',(1, 1, 5), tf.nn.relu], 1),
-				 (['conv',(1, 1, 1), None], 1),
-				 (['pooling',(2,2), None], 1)
+				 (['conv',(10, 5, 5), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
+				 (['conv',(5, 5, 16), tf.nn.relu], 1),
+				 (['pooling',(1, 2), None], 1),
+				 (['conv',(5, 5, 30), tf.nn.relu], 1),
+				 (['pooling',(1,2), None], 1),
+				 (['conv',(5, 5, 16), tf.nn.relu], 1),
+				 (['conv',(10,10 , 1), None], 1)
 				 ]
 
 				  #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
 				
 
-data_specs = ([None, dx], [None, dy], [None,870, 2588,1], [None,435, 1294,1])
+data_specs = ([None, dx], [None, dy], [None,39, 2586*2,1], [None,39, 1293,1])
 cnn = Cnn(data_specs, network_specs)
 
 #cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
-cnn.train(xTr, yTr, batchsize=10, n_training=1, xVl=xVl, yVl=yVl)
+cnn.train(xTr, yTr, batchsize=10, n_training=100, xVl=xVl, yVl=yVl)
 
 loss = cnn.test(xVl, yVl,dataset, batchsize=10)
 
