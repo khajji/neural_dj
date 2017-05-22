@@ -18,15 +18,15 @@ dy = 39*1293
 #y_shape=[batch, height, width, channels]
 #network_specs = #[(['conv', ('height', 'width', 'depth'), 'activation'], number), (['connected', (outsize), 'activation'], number)]
 network_specs = [
-				 (['conv',(10, 5, 16), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
-				 (['conv',(10, 5, 16), tf.nn.relu], 1),
+				 (['conv',(13, 5, 16), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
+				 (['conv',(13, 5, 16), tf.nn.relu], 1),
 				 (['pooling',(1, 2), None], 1),
-				 (['conv',(10, 5, 32), tf.nn.relu], 1),
-				 (['conv',(10, 5, 32), tf.nn.relu], 1),
+				 (['conv',(13, 5, 32), tf.nn.relu], 1),
+				 (['conv',(13, 5, 32), tf.nn.relu], 1),
 				 (['pooling',(1,2), None], 1),
-				 (['conv',(10, 5, 16), tf.nn.relu], 1),
-				 (['conv',(10, 5, 16), tf.nn.relu], 1),
-				 (['conv',(10,5, 3), None], 1)
+				 (['conv',(13, 5, 16), tf.nn.relu], 1),
+				 (['conv',(13, 5, 16), tf.nn.relu], 1),
+				 (['conv',(13,5, 3), None], 1)
 				 ]
 
 				  #VG net convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
@@ -36,7 +36,7 @@ data_specs = ([None, dx], [None, dy], [None,13, 2586*2,3], [None,13, 1293,3])
 cnn = Cnn(data_specs, network_specs)
 
 #cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
-cnn.train(xTr, yTr, batchsize=10, n_training=2000, xVl=xVl, yVl=yVl)
+cnn.train(xTr, yTr,dataset, batchsize=10, n_training=2000, xVl=xVl, yVl=yVl)
 
 loss = cnn.test(xVl, yVl,dataset, batchsize=10)
 
