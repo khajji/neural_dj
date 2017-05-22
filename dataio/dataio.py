@@ -12,8 +12,11 @@ def loady(files):
 
 def load(files, key):
 	data = None
+	#pdb.set_trace()
 	for f in files:
-		x=io.loadmat(f)[key].reshape(1,-1)
+		x=io.loadmat(f)[key]
+		(n,d)=np.shape(x)
+		x=x[:,:min(d,2588)].reshape(1,-1)
 		data = x if data is None else np.concatenate((data,x)) 
 	return np.matrix(data)
 
@@ -42,7 +45,7 @@ def sample_batch(xp, yp, batchsize, slice_number):
 	start = (batchsize*slice_number)%n
 	end = min(start+batchsize, n)
 	x_batch,y_batch = loadx(xp[start:end]), loady(yp[start:end])
-	return x_batch, y_batch
+	return x_batch, y_batch, xp[start:end], yp[start:end]
 
 def plot_images(X):
 	xdim=28; ydim=28 
@@ -89,8 +92,16 @@ class Dataset: #For this class a data point is string representing a file path. 
 		
 		return self.xTr, self.yTr, self.xVl, self.yVl
 
-	def give_outputs(self):
-		return [Dataset.yhat+os.path.basename(os.path.dirname(x)) for x in self.xVl]
+	def give_outputs(self, xbatch=None):
+		if xbatch is None:
+			batch_paths = self.xVl
+		else:
+			batch_paths = []
+			for x in xbatch:
+				if x in self.xVl:
+					batch_paths+=[x]
+
+		return [Dataset.yhat+os.path.basename(os.path.dirname(x)) for x in batch_paths]
 		
 
 

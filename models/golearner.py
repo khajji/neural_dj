@@ -12,31 +12,33 @@ prediction_path = "../data_sample/predictions"
 #pdb.set_trace()
 dataset = Dataset(data_path)
 xTr, yTr, xVl, yVl = dataset.split(ratio=0.8)
-dx =2999760
+dx =870*2588
 dy = 435* 1294
 #x_shape = [batch, height, width, channels] 
 #y_shape=[batch, height, width, channels]
 #network_specs = #[(['conv', ('height', 'width', 'depth'), 'activation'], number), (['connected', (outsize), 'activation'], number)]
 network_specs = [
-				 (['conv',(870, 10, 3), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
-				 (['conv',(870, 10, 5), tf.nn.relu], 1),
-				 (['conv',(870, 10, 1), None], 1)]
+				 (['conv',(1, 1, 3), tf.nn.relu], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
+				 (['conv',(1, 1, 5), tf.nn.relu], 1),
+				 (['conv',(1, 1, 1), None], 1),
+				 (['pooling',(2,2), None], 1)
+				 ]
 
 				  #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
 				
 
-data_specs = ([None, dx], [None, dy], [None,870, 1294,1], [None,435, 1294,1])
+data_specs = ([None, dx], [None, dy], [None,870, 2588,1], [None,435, 1294,1])
 cnn = Cnn(data_specs, network_specs)
-pdb.set_trace()
-#cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
-cnn.train(xTr, yTr, batchsize=100, n_training=2000, xVl=xVl, yVl=yVl)
 
-y_pred, loss = cnn.test(xVl, yVl)
+#cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
+cnn.train(xTr, yTr, batchsize=10, n_training=1, xVl=xVl, yVl=yVl)
+
+loss = cnn.test(xVl, yVl,dataset, batchsize=10)
 
 print("loss on validation set : "+str(loss))
 
-output_names = dataset.give_outputs()
-save(y_pred, prediction_path, output_names)
+#output_names = dataset.give_outputs()
+#save(y_pred, prediction_path, output_names)
 
 
 

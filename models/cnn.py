@@ -26,6 +26,7 @@ class Cnn:
 		specs = self.specs
 		self.x = tf.placeholder(tf.float32, shape=self.x_shape)
 		self.y = tf.placeholder(tf.float32, shape=self.y_shape)
+		#pdb.set_trace()
 		self.xcnn = tf.reshape(self.x, Cnn.reshape(self.xcnn_shape))#[-1,1,self.x_shape,1]
 		#self.ycnn = tf.reshape(self.y, Cnn.reshape(self.ycnn_shape)) #[-1,1,self.y_shape,1]
 		z=self.xcnn; self.dropout = tf.placeholder(tf.float32) #dropout probability holder
@@ -59,25 +60,28 @@ class Cnn:
 
 	def train(self, xTr, yTr, dropout=0.5, batchsize=50, n_training=10000, xVl=None, yVl=None): #data are file paths
 		#Xtr list of files, Ytr list of files
-		if xVl is not None:
-			xVl, yVl = loadx(xVl), loady(yVl)
+		validation_loss = None
 		train_step = tf.train.AdamOptimizer(1e-4).minimize(self.loss) #we use adam method to minimize the loss
 
 		self.session = tf.InteractiveSession()
 		self.session.run(tf.global_variables_initializer())
-
+		#pdb.set_trace()
 		for i in range(n_training):
-			x_batch, y_batch = sample_batch(xTr, yTr, batchsize, i)
+			x_batch, y_batch, _, _ = sample_batch(xTr, yTr, batchsize, i)
 
 			if i%50==0:
 				#validation_loss=None
 				loss = self.loss.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
-				validation_loss = self.loss.eval(feed_dict={self.x: xVl, self.y: yVl, self.dropout: 0.0}) if xVl is not None else None
+				if xVl is not None: #validation loss if validation data provided
+					xVl_batch, yVl_batch, _, _ = sample_batch(xVl, yVl, 2*batchsize, i%(int(len(xVl)/2*batchsize))+1)
+					validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
 				print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation_loss : "+str(validation_loss))
 				
 			train_step.run(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
 
-		validation_loss = self.loss.eval(feed_dict={self.x: xVl, self.y: yVl, self.dropout: 0.0}) if xVl is not None else None
+		if xVl is not None: #validation loss if validation data provided
+			xVl_batch, yVl_batch, _, _ = sample_batch(xVl, yVl, 2*batchsize, i%(int(len(xVl)/2*batchsize))+1)
+			validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
 		print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation_loss : "+str(validation_loss))
 
 		#sess.close()
@@ -85,14 +89,23 @@ class Cnn:
 
 		
 
-	def test(self, xVl, yVl): #data are file paths
-		xVl, yVl = loadx(xVl), loady(yVl)
-		#sess = tf.InteractiveSession()
+	def test(self, xVl, yVl, dataset, batchsize=10): #data are file paths
+		prediction_path="../data_sample/predictions"
+		#xVl, yVl = loadx(xVl), loady(yVl)
+		
+		#pdb.set_trace()
 
-		y_pred=self.y_hat.eval(feed_dict={self.x: xVl, self.dropout:0})
-		score = self.loss.eval(feed_dict={self.x: xVl, self.y: yVl, self.dropout:0})
-		#sess.close()
-		return y_pred, score
+		n = len(xVl); iterations = int(n/batchsize)+1
+		score=0; j=0;
+		for i in range(iterations):
+			x_batch, y_batch, x_batchnames, _ = sample_batch(xVl, yVl, batchsize, i)
+			y_pred=self.y_hat.eval(feed_dict={self.x: x_batch, self.dropout:0})
+			score += self.loss.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout:0})
+			output_names = dataset.give_outputs(xbatch=x_batchnames)
+			save(y_pred, prediction_path, output_names)
+			print("test batch "+str(i)+" of "+str(n)+" done.")
+
+		return score/iterations
 
 	def close(self):
 		self.session.close()
