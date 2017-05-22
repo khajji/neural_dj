@@ -59,7 +59,7 @@ def plot_images(X):
 		axarr.imshow(X[0, :].reshape(ydim, xdim), cmap=plt.cm.binary_r)
 	plt.show()
 
-def sample_batch2(data, batchsize, i):
+def sample_batch2(data, batchsize, slice_number):
 	n = np.size(data) #n is the number of training points. d is the dimention. 
 	start = (batchsize*slice_number)%n
 	end = min(start+batchsize, n)
@@ -71,14 +71,15 @@ def load2(files):
 	data_y = None
 	#pdb.set_trace()
 	for f in files:
-		x=io.loadmat(f)['x']
-		(n,d)=np.shape(x)
-		x=x[:,:min(d,2588)].reshape(1,-1)
+		x=io.loadmat(f)['x'].reshape(1,-1)
+		#(n,d)=np.shape(x)
+		#x=x[:,:min(d,2588)]
+		#pdb.set_trace()
 		data_x = x if data_x is None else np.concatenate((data_x,x))
 
-		y=io.loadmat(f)['y']
-		yarr = np.array([0,0]); yarr[y]=1
-		data_y = yarr if data_y is None else np.concatenate((data_y,y))
+		y=int(io.loadmat(f)['y'][0,0])
+		yarr = np.array([0,0]); yarr[y]=1; yarr=yarr.reshape(1,-1)
+		data_y = yarr if data_y is None else np.concatenate((data_y,yarr))
 
 	return np.matrix(data_x), np.matrix(data_y)
 	 

@@ -31,7 +31,7 @@ class Cnn:
 		#self.ycnn = tf.reshape(self.y, Cnn.reshape(self.ycnn_shape)) #[-1,1,self.y_shape,1]
 		z=self.xcnn; self.dropout = tf.placeholder(tf.float32) #dropout probability holder
 		
-	#	pdb.set_trace()
+		
 		for spec in self.specs:
 			([layer, params, activation], depth) = spec
 			for i in range(depth):
@@ -44,15 +44,14 @@ class Cnn:
 				elif layer == 'dropout':
 					z = Cnn.dropout_layer(z, self.dropout)
 				elif layer == 'pooling':
-				#	pdb.set_trace()
 					(height, width)=params
 					z = Cnn.pooling_layer(z, height, width)
 
 		self.y_hat = tf.reshape(z, Cnn.reshape(self.y.get_shape().as_list()))
 		#self.y_hat = tf.reshape(z, [-1,784])
 		#y_res = tf.reshape(y_conv, )
-		#pdb.set_trace()
 		self.loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.subtract(self.y_hat, self.y)),reduction_indices=1))) #the mean euclidian distance between predictions and labels
+		#self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y, logits=self.y_hat))
 		#self.loss = tf.reduce_mean(tf.square(tf.subtract(self.y_hat, self.y)))
 		#self.ycnn_hat=tf.reshape(z, Cnn.reshape(self.ycnn_shape))
 		
@@ -87,7 +86,7 @@ class Cnn:
 
 		#sess.close()
 
-	def train2(data_train, batchsize=100, n_training=2000, data_validation=None):
+	def train2(self,data_train, dropout=0.5, batchsize=100, n_training=2000, data_validation=None):
 		validation_loss = None
 		train_step = tf.train.AdamOptimizer(1e-4).minimize(self.loss) #we use adam method to minimize the loss
 
@@ -95,20 +94,20 @@ class Cnn:
 		self.session.run(tf.global_variables_initializer())
 		#pdb.set_trace()
 		for i in range(n_training):
-			x_batch, y_batch, _, _ = sample_batch2(data, batchsize, i)
+			x_batch, y_batch = sample_batch2(data_train, batchsize, i)
 
 			if i%50==0:
 				#validation_loss=None
 				loss = self.loss.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
-				if xVl is not None: #validation loss if validation data provided
-					xVl_batch, yVl_batch = sample_batch2(data_validation, 2*batchsize, i%(int(len(xVl)/2*batchsize))+1)
+				if data_validation is not None: #validation loss if validation data provided
+					xVl_batch, yVl_batch = sample_batch2(data_validation, 2*batchsize, i%(int(len(data_validation)/2*batchsize))+1)
 					validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
-				print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation_loss : "+str(validation_loss))
+				print ("iteration "+str(i)+": training accuracy = "+str(loss)+" , validation accuracy : "+str(validation_loss))
 				
 			train_step.run(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
 
-		if xVl is not None: #validation loss if validation data provided
-			xVl_batch, yVl_batch = sample_batch2(data_validation, 2*batchsize, i%(int(len(xVl)/2*batchsize))+1)
+		if data_validation is not None: #validation loss if validation data provided
+			xVl_batch, yVl_batch = sample_batch2(data_validation, 2*batchsize, i%(int(len(data_validation)/2*batchsize))+1)
 			validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
 		print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation_loss : "+str(validation_loss))
 
@@ -140,7 +139,7 @@ class Cnn:
 		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 		
 		n = len(data_validation); iterations = int(n/batchsize)+1
-		score=0; j=0;
+		score=0; j=0;acc=0
 		for i in range(iterations):
 			x_batch, y_batch = sample_batch2(data_validation, batchsize, i)
 			#y_pred=self.y_hat.eval(feed_dict={self.x: x_batch, self.dropout:0})
@@ -182,9 +181,16 @@ class Cnn:
 
 	@staticmethod
 	def connected_layer(x, output_size , activation):
-		[batch, in_height, in_width, in_channels]=x.get_shape().as_list()
-		insize, outsize = in_height*in_width*in_channels, output_size
-		x = tf.reshape(x, [-1, in_height*in_width*in_channels])
+		outsize = output_size
+		shape_x = x.get_shape().as_list()
+		insize = 1
+		for i in range(1,len(shape_x)):
+			insize*=shape_x[i] #the first dimention is the number of points so we skip it. Then we nultiply all the remaining ones.
+
+		#in the case of 4 dimentions this means:
+		#[batch, in_height, in_width, in_channels]=x.get_shape().as_list()
+		#insize = in_height*in_width*in_channels
+		x = tf.reshape(x, [-1, insize])
 		w = Cnn.weight_variable([insize, outsize])
 		b = Cnn.bias_variable([outsize])
 		
