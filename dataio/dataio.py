@@ -35,7 +35,7 @@ def save(x, to, names):
 	#write the predictions in the create folder
 	(n,d)=np.shape(x)
 	for i in range(n):
-		io.savemat(os.path.join(out_path, names[i]), {'y':x[i,:]})
+		io.savemat(os.path.join(out_path, names[i]), {'x':x[i,:], 'y': 0})
 	return True
 
 
@@ -60,6 +60,29 @@ def plot_images(X):
 	else:
 		axarr.imshow(X[0, :].reshape(ydim, xdim), cmap=plt.cm.binary_r)
 	plt.show()
+
+def sample_batch2(data, batchsize, i):
+	n = np.size(data) #n is the number of training points. d is the dimention. 
+	start = (batchsize*slice_number)%n
+	end = min(start+batchsize, n)
+	x_batch,y_batch = load2(data[start:end])
+	return x_batch,y_batch
+
+def load2(files):
+	data_x = None
+	data_y = None
+	#pdb.set_trace()
+	for f in files:
+		x=io.loadmat(f)['x']
+		(n,d)=np.shape(x)
+		x=x[:,:min(d,2588)].reshape(1,-1)
+		data_x = x if data_x is None else np.concatenate((data_x,x))
+
+		y=io.loadmat(f)['y']
+		yarr = np.array([0,0]); yarr[y]=1
+		data_y = yarr if data_y is None else np.concatenate((data_y,y))
+
+	return np.matrix(data_x), np.matrix(data_y)
 	 
 
 
@@ -101,7 +124,7 @@ class Dataset: #For this class a data point is string representing a file path. 
 				if x in self.xVl:
 					batch_paths+=[x]
 
-		return [Dataset.yhat+os.path.basename(os.path.dirname(x)) for x in batch_paths]
+		return [Dataset.yhat+"_"+os.path.basename(os.path.dirname(x)) for x in batch_paths]
 		
 
 

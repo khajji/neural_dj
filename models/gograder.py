@@ -7,11 +7,31 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from cnn import *
 
-data_path="../data_sample/pprocessed_data2"
-prediction_path = "../data_sample/predictions"
+computer_transition_path="../data_sample/predictions2/prediction_7/"
+human_transition_path="../data_sample/pprocessed_data2"
 #pdb.set_trace()
-dataset = Dataset(data_path)
-xTr, yTr, xVl, yVl = dataset.split(ratio=0.8)
+data_comp =  [pred for pred  in os.listdir(data_path)]
+predictions_numbers = [path.split("_")[1] for path in prediction_name]
+
+n = len(predictions_name)
+dataset = Dataset(human_transition_path)
+_, data_hum, _, _ = dataset.y
+
+data_hum=data_hum[np.random.permutation(np.size(Xtr))]
+data_hum=data_hum[:n]
+
+data = np.concatenate((data_hum, data_comp))
+
+ratio = 0.8
+n = len(data)
+shuffle = np.random.permutation(n)
+data = data[shuffle]
+
+data_train, data_val = data[:int(ratio*n)], data[int(ratio*n)+1:]
+
+
+
+
 dx = 784
 dy = 2
 #x_shape = [batch, height, width, channels] 
@@ -29,7 +49,7 @@ network_specs = [
 				 (['connected', (dy), None], 1)] #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
 				 #(['connected', (dy), None], 1), #layer 3: fully connected layer with output size dy and relu activation function
 				 #(['dropout',   None, None],     1)
-h_pool1 = max_pool_2x2(h_conv1)
+
 ##data_specs = (x_shape, y_shape, xnetwork_shape, ynetwork_shape)
 data_specs = ([None, dx], [None, dy], [None,28,28,1], [None,dy])
 cnn = Cnn(data_specs, network_specs)
@@ -37,14 +57,15 @@ cnn.loss = tf.reduce_mean(
     	tf.nn.softmax_cross_entropy_with_logits(labels=cnn.yhat, logits=cnn.y)) #we use the cross entropy loss
 
 #cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
-cnn.train(xTr, yTr, batchsize=100, n_training=2000, xVl=xVl, yVl=yVl)
+cnn.train2(data_train, batchsize=100, n_training=2000, data_validation=data_validation)
 
-y_pred, loss = cnn.test(xVl, yVl)
+accuracy = cnn.test2(data_validation, batchsize=10)
 
-print("loss on validation set : "+str(loss))
+print("loss on validation set : "+str(accuracy))
 
-output_names = dataset.give_outputs()
-save(y_pred, prediction_path, output_names)
+#output_names = dataset.give_outputs()
+#save(y_pred, prediction_path, output_names)
+
 
 
 
