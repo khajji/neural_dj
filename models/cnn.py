@@ -86,6 +86,32 @@ class Cnn:
 		print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation_loss : "+str(validation_loss))
 
 		#sess.close()
+
+	def train2(data_train, batchsize=100, n_training=2000, data_validation=None):
+		validation_loss = None
+		train_step = tf.train.AdamOptimizer(1e-4).minimize(self.loss) #we use adam method to minimize the loss
+
+		self.session = tf.InteractiveSession()
+		self.session.run(tf.global_variables_initializer())
+		#pdb.set_trace()
+		for i in range(n_training):
+			x_batch, y_batch, _, _ = sample_batch2(data, batchsize, i)
+
+			if i%50==0:
+				#validation_loss=None
+				loss = self.loss.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
+				if xVl is not None: #validation loss if validation data provided
+					xVl_batch, yVl_batch = sample_batch2(data_validation, 2*batchsize, i%(int(len(xVl)/2*batchsize))+1)
+					validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
+				print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation_loss : "+str(validation_loss))
+				
+			train_step.run(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
+
+		if xVl is not None: #validation loss if validation data provided
+			xVl_batch, yVl_batch = sample_batch2(data_validation, 2*batchsize, i%(int(len(xVl)/2*batchsize))+1)
+			validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
+		print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation_loss : "+str(validation_loss))
+
 		
 
 		
@@ -107,6 +133,26 @@ class Cnn:
 			print("test batch "+str(i)+" of "+str(n)+" done.")
 
 		return score/iterations
+
+	def test2(self, data_validation, batchsize=10):
+		prediction_path="../data_sample/predictions"
+		correct_prediction = tf.equal(tf.argmax(self.y_hat,1), tf.argmax(self.y,1))
+		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+		
+		n = len(data_validation); iterations = int(n/batchsize)+1
+		score=0; j=0;
+		for i in range(iterations):
+			x_batch, y_batch = sample_batch2(data_validation, batchsize, i)
+			#y_pred=self.y_hat.eval(feed_dict={self.x: x_batch, self.dropout:0})
+			#predictions = vectorize_labels(sess.run(tf.argmax(self.y_hat,1), feed_dict={self.x: x_batch, self.dropout:0})) 
+			#score = self.loss.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout:0})
+			acc += accuracy.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout:0})
+			
+			print("test batch "+str(i)+" of "+str(n)+" done.")
+		return acc/iterations
+		
+		
+
 
 	def close(self):
 		self.session.close()
