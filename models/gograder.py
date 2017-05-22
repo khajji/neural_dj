@@ -7,17 +7,17 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from cnn import *
 
-computer_transition_path="../data_sample/predictions2/prediction_7/"
-human_transition_path="../data_sample/pprocessed_data2"
+computer_transition_path="../data_sample/predictions/prediction_2/"
+human_transition_path="../data_sample/pprocessed_data"
 #pdb.set_trace()
-data_comp =  [pred for pred  in os.listdir(data_path)]
-predictions_numbers = [path.split("_")[1] for path in prediction_name]
+data_comp =  [pred for pred  in os.listdir(computer_transition_path)]
+#predictions_numbers = [path.split("_")[1] for path in data_comp]
 
-n = len(predictions_name)
+n = len(data_comp)
 dataset = Dataset(human_transition_path)
-_, data_hum, _, _ = dataset.y
+data_hum= dataset.y
 
-data_hum=data_hum[np.random.permutation(np.size(Xtr))]
+data_hum=data_hum[np.random.permutation(np.size(data_hum))]
 data_hum=data_hum[:n]
 
 data = np.concatenate((data_hum, data_comp))
@@ -32,26 +32,21 @@ data_train, data_val = data[:int(ratio*n)], data[int(ratio*n)+1:]
 
 
 
-dx = 784
+dx = 39*1293
 dy = 2
 #x_shape = [batch, height, width, channels] 
 #y_shape=[batch, height, width, channels]
 #network_specs = #[(['conv', ('height', 'width', 'depth'), 'activation'], number), (['connected', (outsize), 'activation'], number)]
 network_specs = [
-				 (['conv',(5, 5, 16), tf.nn.relu], 1),
-				 (['pool',(2,2), None], 1), #layer 1: convolution layer with a filter of 1*25 and a depth of 32 using relu as an activation function
-				 (['conv',(5, 5, 64), tf.nn.relu], 1),
-				 (['pool',(2,2), None], 1),
-				 (['conv', (5,5,1), tf.nn.relu], 1),
-				 (['pool',(2,2), None], 1),
-				 (['connected', (1024), tf.nn.relu], 1),
-				 (['dropout',   None, None], 1),
+				 (['conv',(1, 1, 1), tf.nn.relu], 1),
+				 (['pool',(8,16), None], 1),
+				 (['connected', (200), tf.nn.relu], 1),
 				 (['connected', (dy), None], 1)] #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
 				 #(['connected', (dy), None], 1), #layer 3: fully connected layer with output size dy and relu activation function
 				 #(['dropout',   None, None],     1)
 
 ##data_specs = (x_shape, y_shape, xnetwork_shape, ynetwork_shape)
-data_specs = ([None, dx], [None, dy], [None,28,28,1], [None,dy])
+data_specs = ([None, dx], [None, dy], [None,39,1293,1], [None,dy])
 cnn = Cnn(data_specs, network_specs)
 cnn.loss = tf.reduce_mean(
     	tf.nn.softmax_cross_entropy_with_logits(labels=cnn.yhat, logits=cnn.y)) #we use the cross entropy loss

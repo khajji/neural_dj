@@ -33,7 +33,7 @@ def save(x, to, names):
 	#write the predictions in the create folder
 	(n,d)=np.shape(x)
 	for i in range(n):
-
+		io.savemat(os.path.join(out_path, names[i]), {'x':x[i,:], 'y': 0})
 	return True
 
 
