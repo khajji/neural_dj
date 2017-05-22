@@ -14,9 +14,7 @@ def load(files, key):
 	data = None
 	#pdb.set_trace()
 	for f in files:
-		x=io.loadmat(f)[key]
-		(n,d)=np.shape(x)
-		x=x[:,:min(d,2588)].reshape(1,-1)
+		x=io.loadmat(f)[key].reshape(1,-1)
 		data = x if data is None else np.concatenate((data,x)) 
 	return np.matrix(data)
 
