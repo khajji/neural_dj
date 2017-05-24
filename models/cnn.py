@@ -60,7 +60,7 @@ class Cnn:
 
 	def train(self, xTr, yTr, dataset, dropout=0.5, batchsize=50, n_training=10000, xVl=None, yVl=None): #data are file paths
 		#Xtr list of files, Ytr list of files
-		prediction_path="../data_sample/predictions/big_test"
+		prediction_path="../data_sample/predictions/big_test5"
 		validation_loss = None
 		train_step = tf.train.AdamOptimizer(1e-4).minimize(self.loss) #we use adam method to minimize the loss
 
@@ -71,12 +71,13 @@ class Cnn:
 		for i in range(n_training):
 			x_batch, y_batch, _, _ = sample_batch(xTr, yTr, batchsize, i)
 			#pdb.set_trace()
-
+			
 			if i%10==0:
 				#validation_loss=None
 				loss = self.loss.eval(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
 				if xVl is not None: #validation loss if validation data provided
-					xVl_batch, yVl_batch, xv_batchnames, _ = sample_batch(xVl, yVl, 2*batchsize, i%(int(len(xVl)/2*batchsize))+1)
+					#pdb.set_trace()
+					xVl_batch, yVl_batch, xv_batchnames, _ = sample_batch(xVl, yVl, 2*batchsize, i)
 					validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
 					ypred_batch=self.y_hat.eval(feed_dict={self.x: xVl_batch, self.dropout:0})
 					#save data
@@ -131,7 +132,7 @@ class Cnn:
 					xVl_batch, yVl_batch = sample_batch2(data_validation, 2*batchsize, i%(int(len(data_validation)/2*batchsize))+1)
 					validation_loss = self.loss.eval(feed_dict={self.x: xVl_batch, self.y: yVl_batch, self.dropout: 0.0})
 					
-				print ("iteration "+str(i)+": training accuracy = "+str(loss)+" , validation accuracy : "+str(validation_loss))
+				print ("iteration "+str(i)+": training loss = "+str(loss)+" , validation loss : "+str(validation_loss))
 				
 			train_step.run(feed_dict={self.x: x_batch, self.y: y_batch, self.dropout: dropout})
 

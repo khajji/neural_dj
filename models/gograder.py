@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from cnn import *
 
-computer_transition_path="../data_sample/predictions/prediction_4/"
+computer_transition_path="../data_sample/predictions/big_test3/prediction_10/"
 human_transition_path="../data_sample/pprocessed_data"
 data_comp =  [os.path.join(computer_transition_path,pred) for pred  in os.listdir(computer_transition_path)]
-#predictions_numbers = [path.split("_")[1] for path in data_comp]
-
+#pdb.set_trace()
+#predictions_numbers = [path.split("_")[1] for path in data_comet_trace()
+#save(y_pred, prediction_path, output_names)
 n = len(data_comp)
 dataset = Dataset(human_transition_path)
 data_hum= dataset.y
@@ -37,9 +38,9 @@ dy = 2
 #y_shape=[batch, height, width, channels]
 #network_specs = #[(['conv', ('height', 'width', 'depth'), 'activation'], number), (['connected', (outsize), 'activation'], number)]
 network_specs = [
-				 (['conv',(1, 1, 1), tf.nn.relu], 1),
+				 (['conv',(1,1 , 1), tf.nn.relu], 1),
 				 (['pooling',(8,16), None], 1),
-				 (['connected', (200), tf.nn.relu], 1),
+				 (['connected', (10), tf.nn.relu], 1),
 				 (['connected', (dy), None], 1)] #layer 2: convolution layer with a filter of 1*25 and a depth of 64 using relu as an activation function
 				 #(['connected', (dy), None], 1), #layer 3: fully connected layer with output size dy and relu activation function
 				 #(['dropout',   None, None],     1)
@@ -52,6 +53,7 @@ cnn.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=cnn.y, 
 #cnn.build_network(xTr, yTr, batchsize=50, n_training=1)
 cnn.train2(data_train, batchsize=100, n_training=100, data_validation=data_val)
 #pdb.set_trace()
+
 accuracy = cnn.test2(data_val, batchsize=10)
 
 print("Accuracy on validation set : "+str(accuracy))

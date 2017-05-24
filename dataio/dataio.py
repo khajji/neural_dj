@@ -109,7 +109,10 @@ class Dataset: #For this class a data point is string representing a file path. 
 		for d in os.listdir(self.dataset):
 			d = os.path.join(self.dataset, d)
 			if os.path.isdir(d) and ".DS" not in d:
-				data += [d]
+				if os.path.exists(os.path.join(d,Dataset.xs+".mat")) and os.path.exists(os.path.join(d,Dataset.ys+".mat")):
+					data += [d]
+				else:
+					print("WARNING: data point "+d+" does not exist")
 		#pdb.set_trace()
 		
 		self.x = np.array([os.path.join(d,Dataset.xs) for d in data])
